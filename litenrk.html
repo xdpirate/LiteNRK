@@ -1,0 +1,213 @@
+<html>
+<head>
+    <title>LiteNRK</title>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABg2lDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV8/pCIVB4uIdIhQneyiIo61CkWoEGqFVh1MLv2CJg1Jiouj4Fpw8GOx6uDirKuDqyAIfoC4C06KLlLi/5JCixgPjvvx7t7j7h3gb1aZagYTgKpZRiaVFHL5VSH0iiCiAIYwKjFTnxPFNDzH1z18fL2L8yzvc3+OfqVgMsAnECeYbljEG8Qzm5bOeZ84wsqSQnxOPGHQBYkfuS67/Ma55LCfZ0aMbGaeOEIslLpY7mJWNlTiaeKYomqU78+5rHDe4qxW66x9T/7CcEFbWeY6zShSWMQSRAiQUUcFVViI06qRYiJD+0kP/4jjF8klk6sCRo4F1KBCcvzgf/C7W7M4NekmhZNAz4ttf4wBoV2g1bDt72Pbbp0AgWfgSuv4a01g9pP0RkeLHQED28DFdUeT94DLHWD4SZcMyZECNP3FIvB+Rt+UBwZvgb41t7f2Pk4fgCx1lb4BDg6B8RJlr3u8u7e7t3/PtPv7AXmhcqkzmPJyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6QQcABg7IcDfcAAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAABKSURBVCjPY2QwX89ACmBiIBGMaqCLhucbneEIwoWL47RB0n+vpP9eNFPgIiyYGiCGwVUgq8ZpA7IbJP33wtk4PY3mJGQ9jDRPrQA9IyJ+k/r1jQAAAABJRU5ErkJggg==">
+    <script>
+        function fadeOut(element) {
+            let opacity = 1;
+            let timer = setInterval(() => {
+                if (opacity <= 0.1){
+                    clearInterval(timer);
+                    element.style.display = "none";
+                }
+                element.style.opacity = opacity;
+                element.style.filter = `alpha(opacity=${opacity * 100})`;
+                opacity -= opacity * 0.1;
+            }, 20);
+        }
+
+        function checkHidden() {
+            window.setTimeout(() => {
+                let articles = document.querySelectorAll("div.article");
+                let numHidden = 0;
+    
+                for(let i = 0; i < articles.length; i++) {
+                    if(articles[i].style.display == "none") {
+                        numHidden += 1;
+                    }
+                }
+    
+                if(articles.length == numHidden) {
+                    document.querySelector("#mainContent").innerHTML = "Ingen artikler å vise."
+                }
+            }, 500);
+        }
+
+        function hideAll() {
+            document.querySelectorAll(".hideBtn").forEach(btn => btn.click());
+            checkHidden();
+        }
+
+        let bannedCategories = ["Sport", "Donald Trump", "Elon Musk"];
+        let bannedKeywords = ["Trump", "Musk"];
+        let bannedURLContent = ["/sport/"];
+        let rssURL = "https://www.nrk.no/toppsaker.rss";
+
+        let hiddenArticles = JSON.parse(localStorage.getItem("hiddenArticles")) || [];
+
+        fetch(rssURL)
+            .then(response => response.text())
+            .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
+            .then(data => {
+                let includedArticles = [];
+                let items = data.querySelectorAll("item");
+                for(let i = 0; i < items.length; i++) {
+                    let title = items[i].querySelector("title").innerHTML.trim();
+                    let url = items[i].querySelector("link").innerHTML.trim();
+                    let date = items[i].getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "date")[0].innerHTML.trim();
+                    date = new Date(date).toLocaleDateString() + " kl. " + new Date(date).toLocaleTimeString();
+                    let guid = items[i].querySelector("guid").innerHTML.trim();
+                    let categories = items[i].querySelectorAll("category");
+                    
+                    let skip = false;
+
+                    // Check if article is already hidden via hide button
+                    if(hiddenArticles.includes(guid)) {
+                        skip = true;
+                    }
+
+                    // Check if article is a dupe of already included article
+                    if(!skip) {
+                        for(let j = 0; j < includedArticles.length; j++) {
+                            if(includedArticles[j][3] === guid) {
+                                skip = true;
+                                break;z
+                            }
+                        }
+                    }
+
+                    // Check for banned categories
+                    if(!skip) {
+                        for(let j = 0; j < categories.length; j++) {
+                            if(bannedCategories.includes(categories[j].innerHTML.trim())) {
+                                skip = true;
+                            }
+                        }
+                    }
+
+                    // Check for banned keywords
+                    if(!skip) {
+                        for(let j = 0; j < bannedKeywords.length; j++) {
+                            let regex = new RegExp(`\\b${bannedKeywords[j]}\\b`, "i");
+                            if(regex.test(title)) {
+                                skip = true;
+                            }
+                        }
+                    }
+ 
+                    // Check for banned URL content
+                    if (!skip) {
+                        for(let j = 0; j < bannedURLContent.length; j++) {
+                            let regex = new RegExp(bannedURLContent[j], "i");
+                            if(regex.test(url)) {
+                                skip = true;
+                            }
+                        }
+                    }
+                    
+                    if(!skip) {
+                        includedArticles.push([title, url, date, guid])
+                    }
+                }
+
+                let html = "";
+                // Build HTML
+                if(includedArticles.length > 0) {
+                    for(let i = 0; i < includedArticles.length; i++) {
+                        html += `<div class="article"><span class="hideBtn" data-guid="${includedArticles[i][3]}" title="Skjul denne artikkelen">✅</span> <a href="${includedArticles[i][1]}" target="_blank">${includedArticles[i][0]}</a> <span class="articleDate">[${includedArticles[i][2]}]</span></div>\n`;
+                    }
+                } else {
+                    html = `Ingen artikler å vise.`
+                }
+                
+                document.querySelector("#mainContent").innerHTML = html;
+
+                document.querySelectorAll("span.hideBtn").forEach(hideBtn => {
+                    hideBtn.addEventListener("click", function() {
+                        hiddenArticles.push(this.getAttribute("data-guid"));
+                        localStorage.setItem("hiddenArticles", JSON.stringify(hiddenArticles));
+                        fadeOut(this.closest("div"))
+                        checkHidden();
+                    });
+                });
+            })
+    </script>
+    <style>
+        html,body {
+            background-color: #2e3440;
+            color: #eceff4;
+            font-size: 1.2em;
+        }
+
+        div#wrapper {
+            margin-top: 1em;
+            margin-bottom: 1em;
+        }
+
+        a {
+            color: #eceff4;
+            text-decoration: none;
+        }
+
+        a:visited {
+            color: #989898;
+
+        }
+
+        h1, .controls {
+            margin: auto;
+            text-align: center;
+        }
+
+        #mainContent {
+            width: fit-content;
+            margin: auto;
+        }
+
+        span.articleDate {
+            font-size: 0.5em;
+            color: #ccc;
+        }
+        
+        span.hideBtn {
+            font-size: 0.5em;
+            color: #ccc;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .controlBtn {
+            user-select: none;
+            cursor: pointer;
+        }
+
+        div.article {
+            margin-bottom: 0.4em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>LiteNRK</h1>
+
+    <div class="controls">
+        <span class="controlBtn" onclick="location.reload();" title="Oppdater">♻️</span>
+        <span class="controlBtn" onclick="hideAll();" title="Skjul alle artikler">✅</span>
+        <span id ="resetBtn" class="controlBtn" onclick="localStorage.removeItem('hiddenArticles'); location.reload();">🫥</span>
+    </div>
+
+    <div id="wrapper">
+        <div id="mainContent">⏲ Henter artikler...</div>
+    </div>
+
+    <div class="controls">
+        <span class="controlBtn" onclick="document.body.scrollIntoView({behavior: 'smooth'});" title="Skroll til toppen">🔝</span>
+    </div>
+
+    <script>
+        document.querySelector("#resetBtn").title = `Tilbakestill skjulte artikler (${hiddenArticles.length})`;
+    </script>
+</body>
+
+</html>
