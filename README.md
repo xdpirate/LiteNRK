@@ -24,7 +24,7 @@ Framsiden på NRK.no blir mer og mer bilde- og videofokusert. Noen ganger vil ma
 
 ## Lisens
 
-Programmet er lisensiert under GNU General Purpose License.
+Programmet er lisensiert under GNU General Public License v3.0 (GPLv3):
 
     LiteNRK - En liten front-end for NRK.no
     Copyright (C) 2025 xdpirate
