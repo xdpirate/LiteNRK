@@ -172,7 +172,6 @@
         
         span.hideBtn {
             font-size: 0.5em;
-            color: #ccc;
             user-select: none;
             cursor: pointer;
         }
@@ -189,6 +188,17 @@
         div#footer {
             font-size: 0.6em;
             margin-top: 0.5em;
+        }
+
+        /* Phone styles */
+        @media all and (max-width: 1000px) {
+            html,body {
+                font-size: 1.4em;
+            }
+
+            span.hideBtn, .controlBtn {
+                font-size: 1.4em;
+            }
         }
     </style>
 </head>
