@@ -16,7 +16,7 @@ Framsiden på NRK.no blir mer og mer bilde- og videofokusert. Noen ganger vil ma
 
 ## Hvordan?
 
-*LiteNRK* henter RSS-strømmen til forssiden av NRK.no (`https://www.nrk.no/toppsaker.rss`) og viser de som overskrift + lenke. Prosesseringen skjer lokalt i nettleseren din og snakker ikke med noen andre servere enn NRK.
+*LiteNRK* henter RSS-strømmen til forsiden av NRK.no (`https://www.nrk.no/toppsaker.rss`) og viser de som overskrift + lenke. Prosesseringen skjer lokalt i nettleseren din og snakker ikke med noen andre servere enn NRKs.
 
 ## Personvern
 
