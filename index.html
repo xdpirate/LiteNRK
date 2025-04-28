@@ -155,7 +155,7 @@
 
         }
 
-        h1, .controls {
+        h1, .controls, #footer {
             margin: auto;
             text-align: center;
         }
@@ -185,6 +185,11 @@
         div.article {
             margin-bottom: 0.4em;
         }
+
+        div#footer {
+            font-size: 0.6em;
+            margin-top: 0.5em;
+        }
     </style>
 </head>
 
@@ -203,6 +208,11 @@
 
     <div class="controls">
         <span class="controlBtn" onclick="document.body.scrollIntoView({behavior: 'smooth'});" title="Skroll til toppen">🔝</span>
+    </div>
+
+    <div id="footer">
+        Overskrifter fra <a href="https://www.nrk.no/" target="_blank">NRK Nyheter</a>.<br />
+        App: &copy; 2025 xdpirate <a href="https://github.com/xdpirate/LiteNRK" target="_blank">[Github]</a>
     </div>
 
     <script>
