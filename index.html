@@ -39,12 +39,44 @@
             checkHidden();
         }
 
-        let bannedCategories = ["Sport", "Donald Trump", "Elon Musk"];
-        let bannedKeywords = ["Trump", "Musk"];
-        let bannedURLContent = ["/sport/"];
-        let rssURL = "https://www.nrk.no/toppsaker.rss";
+        function toggleFilterModal() {
+            if(document.getElementById("modalbg").style.display == "none") {
+                document.getElementById("modalbg").style.display = "block";
+            } else {
+                document.getElementById("modalbg").style.display = "none";
+            }
+        }
 
+        function saveFilters() {
+            bannedCategories = document.querySelector("#bannedCategoriesTextArea").value.trim().toLowerCase().split(";");
+            bannedKeywords = document.querySelector("#bannedKeywordsTextArea").value.trim().toLowerCase().split(";");
+            bannedURLContent = document.querySelector("#bannedURLContentTextArea").value.trim().toLowerCase().split(";");
+
+            localStorage.setItem("bannedCategories", JSON.stringify(bannedCategories));
+            localStorage.setItem("bannedKeywords", JSON.stringify(bannedKeywords));
+            localStorage.setItem("bannedURLContent", JSON.stringify(bannedURLContent));
+
+            location.reload();
+        }
+
+        let rssURL = "https://www.nrk.no/toppsaker.rss";
+        
+        let bannedCategories = JSON.parse(localStorage.getItem("bannedCategories")) || [];
+        let bannedKeywords = JSON.parse(localStorage.getItem("bannedKeywords")) || [];
+        let bannedURLContent = JSON.parse(localStorage.getItem("bannedURLContent")) || [];
         let hiddenArticles = JSON.parse(localStorage.getItem("hiddenArticles")) || [];
+
+        if(bannedCategories.length == 1 && bannedCategories[0] == "") {
+            bannedCategories = [];
+        }
+
+        if(bannedKeywords.length == 1 && bannedKeywords[0] == "") {
+            bannedKeywords = [];
+        }
+
+        if(bannedURLContent.length == 1 && bannedURLContent[0] == "") {
+            bannedURLContent = [];
+        }
 
         fetch(rssURL)
             .then(response => response.text())
@@ -80,7 +112,7 @@
                     // Check for banned categories
                     if(!skip) {
                         for(let j = 0; j < categories.length; j++) {
-                            if(bannedCategories.includes(categories[j].innerHTML.trim())) {
+                            if(bannedCategories.includes(categories[j].innerHTML.toLowerCase().trim())) {
                                 skip = true;
                             }
                         }
@@ -145,6 +177,17 @@
             margin-bottom: 1em;
         }
 
+        h2 {
+            margin: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 5em;
+        }
+
         a {
             color: #eceff4;
             text-decoration: none;
@@ -194,6 +237,29 @@
             font-weight: bold;
         }
 
+        #modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            background-color: #2e3440;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 10px 10px 5px black;
+        }
+
+        #modalbg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1040;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+        }
+
         /* Phone styles */
         @media all and (max-width: 1000px) {
             html,body {
@@ -202,6 +268,10 @@
 
             span.hideBtn, .controlBtn {
                 font-size: 1.4em;
+            }
+
+            div.controls {
+                font-size: 2em;
             }
         }
     </style>
@@ -212,8 +282,34 @@
 
     <div class="controls">
         <span class="controlBtn" onclick="location.reload();" title="Oppdater">♻️</span>
+        <span id="filterBtn" class="controlBtn" onclick="toggleFilterModal();" title="Rediger filtre">🙈</span>
         <span class="controlBtn" onclick="hideAll();" title="Skjul alle artikler">✅</span>
-        <span id ="resetBtn" class="controlBtn" onclick="localStorage.removeItem('hiddenArticles'); location.reload();">🫥</span>
+        <span id="resetBtn" class="controlBtn" onclick="localStorage.removeItem('hiddenArticles'); location.reload();">🫥</span>
+    </div>
+
+    <div id="modalbg" style="display: none;" onclick="this.style.display = 'none';">
+        <div id="modal" onclick="event.stopPropagation();">
+            <h2>Filtre</h2>
+            Her kan du definere filtre for å filtrere vekk artikler du ikke ønsker å se. Hvert filter innenfor hver kategori skal separeres med et semikolon (<code>;</code>).<br /><br />
+
+            <b>Kategorifilter:</b><br />
+            <small><i>Hvis noen av disse kategoriene er satt, skjul artikkelen</i></small>
+            <textarea id="bannedCategoriesTextArea" placeholder="Kategorier;Separeres med semikolon;Donald Trump;USA;Elon Musk"></textarea><br /><br />
+            
+            <b>Nøkkelordsfilter:</b><br />
+            <small><i>Hvis noen av disse nøkkelordene finnes i tittelen, skjul artikkelen</i></small>
+            <textarea id="bannedKeywordsTextArea" placeholder="Donald Trump;TikTok;Trond Giske"></textarea><br /><br />
+            
+            <b>URL-filter:</b><br />
+            <small><i>Hvis noen av disse filtrene finnes i URLen, skjul artikkelen</i></small>
+            <textarea id="bannedURLContentTextArea" placeholder="/sport/;/trondelag/;/xl/"></textarea><br /><br />
+
+                
+            <div class="formControlsWrapper">
+                <input type="button" value="Lagre" id="editModalSaveButton" onclick="saveFilters();" /> 
+                <input type="button" value="Avbryt" id="editModalCancelButton" onclick="document.getElementById('modalbg').style.display = 'none';" />
+            </div>
+        </div>
     </div>
 
     <div id="wrapper">
@@ -231,6 +327,10 @@
 
     <script>
         document.querySelector("#resetBtn").title = `Tilbakestill skjulte artikler (${hiddenArticles.length})`;
+
+        document.querySelector("#bannedCategoriesTextArea").innerText = bannedCategories.join(";");
+        document.querySelector("#bannedKeywordsTextArea").innerText = bannedKeywords.join(";");
+        document.querySelector("#bannedURLContentTextArea").innerText = bannedURLContent.join(";");
     </script>
 </body>
 
