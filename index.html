@@ -79,6 +79,28 @@
             }
         }
 
+        function quickFilter() {
+            let filterInput = document.querySelector("#quickFilter").value.trim().toLowerCase();
+            if(filterInput == "") {
+                document.querySelectorAll("div.article").forEach(article => article.classList.remove("hidden"));
+            } else {
+                let articleDivs = document.querySelectorAll("div.article");
+                articleDivs.forEach(articleDiv => {
+                    let headline = articleDiv.querySelector("a.headline").innerText.toLowerCase();
+                    let categories = "";
+                    if(articleDiv.querySelector("span.categories")) {
+                        categories = articleDiv.querySelector("span.categories").innerText.toLowerCase();
+                    }
+
+                    if(!headline.includes(filterInput) && !categories.includes(filterInput)) {
+                        articleDiv.classList.add("hidden");
+                    } else {
+                        articleDiv.classList.remove("hidden");
+                    }
+                });
+            }
+        }
+
         function clearHiddenArticles() {
             if(confirm("Er du sikker på at du vil slette listen over skjulte artikler? Dette kan ikke angres, og vil ikke slette filtrene eller innstillingene dine.")) {
                 localStorage.removeItem('hiddenArticles'); 
@@ -194,7 +216,7 @@
                 let html = "";
                 if(includedArticles.length > 0) {
                     for(let i = 0; i < includedArticles.length; i++) {
-                        html += `<div class="article"><span class="hideBtn" data-guid="${includedArticles[i][3]}" title="Skjul denne artikkelen">✅</span> <a href="${includedArticles[i][1]}" target="_blank">${includedArticles[i][0]}</a> <span class="articleDate">[${includedArticles[i][2]}]</span>${hideCategories == false && includedArticles[i][4].length > 0 ? `<br /><span class="categories">(${includedArticles[i][4].join(", ")})</span>` : ''}</div>\n`;
+                        html += `<div class="article"><span class="hideBtn" data-guid="${includedArticles[i][3]}" title="Skjul denne artikkelen">✅</span> <a class="headline" href="${includedArticles[i][1]}" target="_blank">${includedArticles[i][0]}</a> <span class="articleDate">[${includedArticles[i][2]}]</span>${hideCategories == false && includedArticles[i][4].length > 0 ? `<br /><span class="categories">(${includedArticles[i][4].join(", ")})</span>` : ''}</div>\n`;
                     }
                 } else {
                     html = `Ingen artikler å vise.`
@@ -320,6 +342,11 @@
             display: none !important;
         }
 
+        #quickFilter {
+            margin-top: 1em;
+            width: 20em;
+        }
+
         /* Phone styles */
         @media all and (max-width: 1000px) {
             html,body {
@@ -343,7 +370,8 @@
     <div class="controls">
         <span class="controlBtn" onclick="location.reload();" title="Oppdater">♻️</span>
         <span id="filterBtn" class="controlBtn" onclick="toggleFilterModal();" title="Innstillinger og filtre">⚙️</span>
-        <span class="controlBtn" onclick="hideAll();" title="Skjul alle viste artikler">✅</span>
+        <br />
+        <input type="text" id="quickFilter" autocomplete="off" placeholder="Hurtigfilter..." oninput="quickFilter();" />
     </div>
 
     <div id="modalbg" style="display: none;" onclick="this.style.display = 'none';">
