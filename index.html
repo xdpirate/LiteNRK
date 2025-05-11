@@ -47,16 +47,29 @@
             }
         }
 
-        function saveFilters() {
+        function saveSettings() {
             bannedCategories = document.querySelector("#bannedCategoriesTextArea").value.trim().toLowerCase().split(";");
             bannedKeywords = document.querySelector("#bannedKeywordsTextArea").value.trim().toLowerCase().split(";");
             bannedURLContent = document.querySelector("#bannedURLContentTextArea").value.trim().toLowerCase().split(";");
+            hideQuoteTitles = document.querySelector("#hideQuoteTitlesCheckBox").checked;
 
             localStorage.setItem("bannedCategories", JSON.stringify(bannedCategories));
             localStorage.setItem("bannedKeywords", JSON.stringify(bannedKeywords));
             localStorage.setItem("bannedURLContent", JSON.stringify(bannedURLContent));
+            localStorage.setItem("hideQuoteTitles", JSON.stringify(hideQuoteTitles));
 
             location.reload();
+        }
+
+        function clearSettings() {
+            if(confirm("Er du sikker på at du vil slette alle filtre og tilbakestille alle innstillinger?")) {
+                localStorage.removeItem("bannedCategories");
+                localStorage.removeItem("bannedKeywords");
+                localStorage.removeItem("bannedURLContent");
+                localStorage.removeItem("hideQuoteTitles");
+    
+                location.reload();
+            }
         }
 
         let rssURL = "https://www.nrk.no/toppsaker.rss";
@@ -65,6 +78,7 @@
         let bannedKeywords = JSON.parse(localStorage.getItem("bannedKeywords")) || [];
         let bannedURLContent = JSON.parse(localStorage.getItem("bannedURLContent")) || [];
         let hiddenArticles = JSON.parse(localStorage.getItem("hiddenArticles")) || [];
+        let hideQuoteTitles = JSON.parse(localStorage.getItem("hideQuoteTitles")) || false;
 
         if(bannedCategories.length == 1 && bannedCategories[0] == "") {
             bannedCategories = [];
@@ -104,8 +118,15 @@
                         for(let j = 0; j < includedArticles.length; j++) {
                             if(includedArticles[j][3] === guid) {
                                 skip = true;
-                                break;z
+                                break;
                             }
+                        }
+                    }
+
+                    // Check if title is a quote
+                    if(!skip) {
+                        if(hideQuoteTitles && title.startsWith("«") && title.endsWith("»")) {
+                            skip = true;
                         }
                     }
 
@@ -304,9 +325,11 @@
             <small><i>Hvis noen av disse filtrene finnes i URLen, skjul artikkelen</i></small>
             <textarea id="bannedURLContentTextArea" placeholder="/sport/;/trondelag/;/xl/"></textarea><br /><br />
 
+            <input type="checkbox" id="hideQuoteTitlesCheckBox" /><label for="hideQuoteTitlesCheckBox">Skjul artikler som kun er et sitat («», ofte klikkagn)</label><br /><br />
                 
             <div class="formControlsWrapper">
-                <input type="button" value="Lagre" id="editModalSaveButton" onclick="saveFilters();" /> 
+                <input type="button" value="Lagre innstillinger" id="editModalSaveButton" onclick="saveSettings();" /> 
+                <input type="button" value="Tilbakestill innstillinger" id="editModalDeleteButton" onclick="clearSettings();" /> 
                 <input type="button" value="Avbryt" id="editModalCancelButton" onclick="document.getElementById('modalbg').style.display = 'none';" />
             </div>
         </div>
@@ -331,6 +354,7 @@
         document.querySelector("#bannedCategoriesTextArea").innerText = bannedCategories.join(";");
         document.querySelector("#bannedKeywordsTextArea").innerText = bannedKeywords.join(";");
         document.querySelector("#bannedURLContentTextArea").innerText = bannedURLContent.join(";");
+        document.querySelector("#hideQuoteTitlesCheckBox").checked = hideQuoteTitles;
     </script>
 </body>
 
