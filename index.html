@@ -31,6 +31,8 @@
                 if(articles.length == numHidden) {
                     document.querySelector("#mainContent").innerHTML = "Ingen artikler å vise."
                 }
+
+                document.querySelector("#resetBtn").title = `Tilbakestill skjulte artikler (${hiddenArticles.length})`;
         }
 
         function hideAll() {
