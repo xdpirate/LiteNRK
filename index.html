@@ -10,6 +10,7 @@
                 if (opacity <= 0.1){
                     clearInterval(timer);
                     element.style.display = "none";
+                    checkHidden();
                 }
                 element.style.opacity = opacity;
                 element.style.filter = `alpha(opacity=${opacity * 100})`;
@@ -18,7 +19,6 @@
         }
 
         function checkHidden() {
-            window.setTimeout(() => {
                 let articles = document.querySelectorAll("div.article");
                 let numHidden = 0;
     
@@ -31,12 +31,10 @@
                 if(articles.length == numHidden) {
                     document.querySelector("#mainContent").innerHTML = "Ingen artikler å vise."
                 }
-            }, 1000);
         }
 
         function hideAll() {
             document.querySelectorAll(".hideBtn").forEach(btn => btn.click());
-            checkHidden();
         }
 
         function toggleFilterModal() {
@@ -196,7 +194,6 @@
                         hiddenArticles.push(this.getAttribute("data-guid"));
                         localStorage.setItem("hiddenArticles", JSON.stringify(hiddenArticles));
                         fadeOut(this.closest("div"))
-                        checkHidden();
                     });
                 });
 
