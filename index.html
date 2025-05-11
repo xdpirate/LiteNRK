@@ -51,11 +51,13 @@
             bannedCategories = document.querySelector("#bannedCategoriesTextArea").value.trim().toLowerCase().split(";");
             bannedKeywords = document.querySelector("#bannedKeywordsTextArea").value.trim().toLowerCase().split(";");
             bannedURLContent = document.querySelector("#bannedURLContentTextArea").value.trim().toLowerCase().split(";");
+            hidePublicationTimestamp = document.querySelector("#hidePublicationTimestampCheckBox").checked;
             hideQuoteTitles = document.querySelector("#hideQuoteTitlesCheckBox").checked;
 
             localStorage.setItem("bannedCategories", JSON.stringify(bannedCategories));
             localStorage.setItem("bannedKeywords", JSON.stringify(bannedKeywords));
             localStorage.setItem("bannedURLContent", JSON.stringify(bannedURLContent));
+            localStorage.setItem("hidePublicationTimestamp", JSON.stringify(hidePublicationTimestamp));
             localStorage.setItem("hideQuoteTitles", JSON.stringify(hideQuoteTitles));
 
             location.reload();
@@ -66,6 +68,7 @@
                 localStorage.removeItem("bannedCategories");
                 localStorage.removeItem("bannedKeywords");
                 localStorage.removeItem("bannedURLContent");
+                localStorage.removeItem("hidePublicationTimestamp");
                 localStorage.removeItem("hideQuoteTitles");
     
                 location.reload();
@@ -78,6 +81,7 @@
         let bannedKeywords = JSON.parse(localStorage.getItem("bannedKeywords")) || [];
         let bannedURLContent = JSON.parse(localStorage.getItem("bannedURLContent")) || [];
         let hiddenArticles = JSON.parse(localStorage.getItem("hiddenArticles")) || [];
+        let hidePublicationTimestamp = JSON.parse(localStorage.getItem("hidePublicationTimestamp")) || false;
         let hideQuoteTitles = JSON.parse(localStorage.getItem("hideQuoteTitles")) || false;
 
         if(bannedCategories.length == 1 && bannedCategories[0] == "") {
@@ -184,6 +188,11 @@
                         checkHidden();
                     });
                 });
+
+                if(hidePublicationTimestamp) {
+                    document.querySelectorAll("span.articleDate").forEach(timestamp => timestamp.classList.add("hidden")
+                    );
+                }
             })
     </script>
     <style>
@@ -281,6 +290,10 @@
             backdrop-filter: blur(15px);
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         /* Phone styles */
         @media all and (max-width: 1000px) {
             html,body {
@@ -325,6 +338,8 @@
             <small><i>Hvis noen av disse filtrene finnes i URLen, skjul artikkelen</i></small>
             <textarea id="bannedURLContentTextArea" placeholder="/sport/;/trondelag/;/xl/"></textarea><br /><br />
 
+            <input type="checkbox" id="hidePublicationTimestampCheckBox" /><label for="hidePublicationTimestampCheckBox">Skjul publiseringstidspunkt</label><br />
+
             <input type="checkbox" id="hideQuoteTitlesCheckBox" /><label for="hideQuoteTitlesCheckBox">Skjul artikler som kun er et sitat («», ofte klikkagn)</label><br /><br />
                 
             <div class="formControlsWrapper">
@@ -355,6 +370,7 @@
         document.querySelector("#bannedKeywordsTextArea").innerText = bannedKeywords.join(";");
         document.querySelector("#bannedURLContentTextArea").innerText = bannedURLContent.join(";");
         document.querySelector("#hideQuoteTitlesCheckBox").checked = hideQuoteTitles;
+        document.querySelector("#hidePublicationTimestampCheckBox").checked = hidePublicationTimestamp;
     </script>
 </body>
 
