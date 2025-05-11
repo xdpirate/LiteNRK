@@ -31,8 +31,6 @@
                 if(articles.length == numHidden) {
                     document.querySelector("#mainContent").innerHTML = "Ingen artikler å vise."
                 }
-
-                document.querySelector("#resetBtn").title = `Tilbakestill skjulte artikler (${hiddenArticles.length})`;
         }
 
         function hideAll() {
@@ -52,6 +50,7 @@
             bannedKeywords = document.querySelector("#bannedKeywordsTextArea").value.trim().toLowerCase().split(";");
             bannedURLContent = document.querySelector("#bannedURLContentTextArea").value.trim().toLowerCase().split(";");
             hidePublicationTimestamp = document.querySelector("#hidePublicationTimestampCheckBox").checked;
+            hideCategories = document.querySelector("#hideCategoriesCheckBox").checked;
             hideQuoteTitles = document.querySelector("#hideQuoteTitlesCheckBox").checked;
             hideShortTitles = document.querySelector("#hideShortTitlesCheckBox").checked;
 
@@ -59,6 +58,7 @@
             localStorage.setItem("bannedKeywords", JSON.stringify(bannedKeywords));
             localStorage.setItem("bannedURLContent", JSON.stringify(bannedURLContent));
             localStorage.setItem("hidePublicationTimestamp", JSON.stringify(hidePublicationTimestamp));
+            localStorage.setItem("hideCategories", JSON.stringify(hideCategories));
             localStorage.setItem("hideQuoteTitles", JSON.stringify(hideQuoteTitles));
             localStorage.setItem("hideShortTitles", JSON.stringify(hideShortTitles));
 
@@ -71,6 +71,7 @@
                 localStorage.removeItem("bannedKeywords");
                 localStorage.removeItem("bannedURLContent");
                 localStorage.removeItem("hidePublicationTimestamp");
+                localStorage.removeItem("hideCategories");
                 localStorage.removeItem("hideQuoteTitles");
                 localStorage.removeItem("hideShortTitles");
     
@@ -92,6 +93,7 @@
         let bannedURLContent = JSON.parse(localStorage.getItem("bannedURLContent")) || [];
         let hiddenArticles = JSON.parse(localStorage.getItem("hiddenArticles")) || [];
         let hidePublicationTimestamp = JSON.parse(localStorage.getItem("hidePublicationTimestamp")) || false;
+        let hideCategories = JSON.parse(localStorage.getItem("hideCategories")) || false;
         let hideQuoteTitles = JSON.parse(localStorage.getItem("hideQuoteTitles")) || false;
         let hideShortTitles = JSON.parse(localStorage.getItem("hideShortTitles")) || false;
 
@@ -182,15 +184,17 @@
                     }
                     
                     if(!skip) {
-                        includedArticles.push([title, url, date, guid])
+                        let cats = [];
+                        categories.forEach(categoryElement => cats.push(categoryElement.innerHTML))
+                        includedArticles.push([title, url, date, guid, cats])
                     }
                 }
 
-                let html = "";
                 // Build HTML
+                let html = "";
                 if(includedArticles.length > 0) {
                     for(let i = 0; i < includedArticles.length; i++) {
-                        html += `<div class="article"><span class="hideBtn" data-guid="${includedArticles[i][3]}" title="Skjul denne artikkelen">✅</span> <a href="${includedArticles[i][1]}" target="_blank">${includedArticles[i][0]}</a> <span class="articleDate">[${includedArticles[i][2]}]</span></div>\n`;
+                        html += `<div class="article"><span class="hideBtn" data-guid="${includedArticles[i][3]}" title="Skjul denne artikkelen">✅</span> <a href="${includedArticles[i][1]}" target="_blank">${includedArticles[i][0]}</a> <span class="articleDate">[${includedArticles[i][2]}]</span>${hideCategories == false && includedArticles[i][4].length > 0 ? `<br /><span class="categories">(${includedArticles[i][4].join(", ")})</span>` : ''}</div>\n`;
                     }
                 } else {
                     html = `Ingen artikler å vise.`
@@ -258,6 +262,11 @@
         span.articleDate {
             font-size: 0.5em;
             color: #ccc;
+        }
+
+        span.categories {
+            font-size: 0.5em;
+            margin-left: 2em;   
         }
         
         span.hideBtn {
@@ -356,6 +365,8 @@
 
             <input type="checkbox" id="hidePublicationTimestampCheckBox" /><label for="hidePublicationTimestampCheckBox">Skjul publiseringstidspunkt</label><br />
             
+            <input type="checkbox" id="hideCategoriesCheckBox" /><label for="hideCategoriesCheckBox">Skjul kategorier</label><br />
+            
             <input type="checkbox" id="hideQuoteTitlesCheckBox" /><label for="hideQuoteTitlesCheckBox">Skjul artikler som kun er et sitat («», ofte klikkagn)</label><br />
             
             <input type="checkbox" id="hideShortTitlesCheckBox" /><label for="hideShortTitlesCheckBox">Skjul artikler med tre eller færre ord (ofte klikkagn)</label><br /><br />
@@ -383,13 +394,12 @@
     </div>
 
     <script>
-        document.querySelector("#resetBtn").title = `Tilbakestill skjulte artikler (${hiddenArticles.length})`;
-
         document.querySelector("#bannedCategoriesTextArea").innerText = bannedCategories.join(";");
         document.querySelector("#bannedKeywordsTextArea").innerText = bannedKeywords.join(";");
         document.querySelector("#bannedURLContentTextArea").innerText = bannedURLContent.join(";");
         document.querySelector("#hideQuoteTitlesCheckBox").checked = hideQuoteTitles;
         document.querySelector("#hidePublicationTimestampCheckBox").checked = hidePublicationTimestamp;
+        document.querySelector("#hideCategoriesCheckBox").checked = hideCategories;
         document.querySelector("#hideShortTitlesCheckBox").checked = hideShortTitles;
     </script>
 </body>
