@@ -66,7 +66,7 @@
         }
 
         function clearSettings() {
-            if(confirm("Er du sikker på at du vil slette alle filtre og tilbakestille alle innstillinger?")) {
+            if(confirm("Er du sikker på at du vil slette alle filtre og tilbakestille alle innstillinger? Dette kan ikke angres, og vil ikke slette listen over skjulte artikler.")) {
                 localStorage.removeItem("bannedCategories");
                 localStorage.removeItem("bannedKeywords");
                 localStorage.removeItem("bannedURLContent");
@@ -74,6 +74,13 @@
                 localStorage.removeItem("hideQuoteTitles");
                 localStorage.removeItem("hideShortTitles");
     
+                location.reload();
+            }
+        }
+
+        function clearHiddenArticles() {
+            if(confirm("Er du sikker på at du vil slette listen over skjulte artikler? Dette kan ikke angres, og vil ikke slette filtrene eller innstillingene dine.")) {
+                localStorage.removeItem('hiddenArticles'); 
                 location.reload();
             }
         }
@@ -326,14 +333,13 @@
 
     <div class="controls">
         <span class="controlBtn" onclick="location.reload();" title="Oppdater">♻️</span>
-        <span id="filterBtn" class="controlBtn" onclick="toggleFilterModal();" title="Rediger filtre">🙈</span>
-        <span class="controlBtn" onclick="hideAll();" title="Skjul alle artikler">✅</span>
-        <span id="resetBtn" class="controlBtn" onclick="localStorage.removeItem('hiddenArticles'); location.reload();">🫥</span>
+        <span id="filterBtn" class="controlBtn" onclick="toggleFilterModal();" title="Innstillinger og filtre">⚙️</span>
+        <span class="controlBtn" onclick="hideAll();" title="Skjul alle viste artikler">✅</span>
     </div>
 
     <div id="modalbg" style="display: none;" onclick="this.style.display = 'none';">
         <div id="modal" onclick="event.stopPropagation();">
-            <h2>Filtre</h2>
+            <h2>Innstillinger og filtre</h2>
             Her kan du definere filtre for å filtrere vekk artikler du ikke ønsker å se. Hvert filter innenfor hver kategori skal separeres med et semikolon (<code>;</code>).<br /><br />
 
             <b>Kategorifilter:</b><br />
@@ -356,7 +362,8 @@
 
             <div class="formControlsWrapper">
                 <input type="button" value="Lagre innstillinger" id="editModalSaveButton" onclick="saveSettings();" /> 
-                <input type="button" value="Tilbakestill innstillinger" id="editModalDeleteButton" onclick="clearSettings();" /> 
+                <input type="button" value="Tilbakestill innstillinger" id="editModalResetSettingsButton" onclick="clearSettings();" /> 
+                <input type="button" value="Tilbakestill skjulte artikler" id="editModalResetHiddenButton" onclick="clearHiddenArticles();" /> 
                 <input type="button" value="Avbryt" id="editModalCancelButton" onclick="document.getElementById('modalbg').style.display = 'none';" />
             </div>
         </div>
