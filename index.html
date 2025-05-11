@@ -31,7 +31,7 @@
                 if(articles.length == numHidden) {
                     document.querySelector("#mainContent").innerHTML = "Ingen artikler å vise."
                 }
-            }, 500);
+            }, 1000);
         }
 
         function hideAll() {
@@ -53,12 +53,14 @@
             bannedURLContent = document.querySelector("#bannedURLContentTextArea").value.trim().toLowerCase().split(";");
             hidePublicationTimestamp = document.querySelector("#hidePublicationTimestampCheckBox").checked;
             hideQuoteTitles = document.querySelector("#hideQuoteTitlesCheckBox").checked;
+            hideShortTitles = document.querySelector("#hideShortTitlesCheckBox").checked;
 
             localStorage.setItem("bannedCategories", JSON.stringify(bannedCategories));
             localStorage.setItem("bannedKeywords", JSON.stringify(bannedKeywords));
             localStorage.setItem("bannedURLContent", JSON.stringify(bannedURLContent));
             localStorage.setItem("hidePublicationTimestamp", JSON.stringify(hidePublicationTimestamp));
             localStorage.setItem("hideQuoteTitles", JSON.stringify(hideQuoteTitles));
+            localStorage.setItem("hideShortTitles", JSON.stringify(hideShortTitles));
 
             location.reload();
         }
@@ -70,6 +72,7 @@
                 localStorage.removeItem("bannedURLContent");
                 localStorage.removeItem("hidePublicationTimestamp");
                 localStorage.removeItem("hideQuoteTitles");
+                localStorage.removeItem("hideShortTitles");
     
                 location.reload();
             }
@@ -83,6 +86,7 @@
         let hiddenArticles = JSON.parse(localStorage.getItem("hiddenArticles")) || [];
         let hidePublicationTimestamp = JSON.parse(localStorage.getItem("hidePublicationTimestamp")) || false;
         let hideQuoteTitles = JSON.parse(localStorage.getItem("hideQuoteTitles")) || false;
+        let hideShortTitles = JSON.parse(localStorage.getItem("hideShortTitles")) || false;
 
         if(bannedCategories.length == 1 && bannedCategories[0] == "") {
             bannedCategories = [];
@@ -130,6 +134,13 @@
                     // Check if title is a quote
                     if(!skip) {
                         if(hideQuoteTitles && title.startsWith("«") && title.endsWith("»")) {
+                            skip = true;
+                        }
+                    }
+
+                    // Check for short titles
+                    if(!skip) {
+                        if(hideShortTitles && title.trim().split(/\s+/).length <= 3) {
                             skip = true;
                         }
                     }
@@ -339,9 +350,11 @@
             <textarea id="bannedURLContentTextArea" placeholder="/sport/;/trondelag/;/xl/"></textarea><br /><br />
 
             <input type="checkbox" id="hidePublicationTimestampCheckBox" /><label for="hidePublicationTimestampCheckBox">Skjul publiseringstidspunkt</label><br />
+            
+            <input type="checkbox" id="hideQuoteTitlesCheckBox" /><label for="hideQuoteTitlesCheckBox">Skjul artikler som kun er et sitat («», ofte klikkagn)</label><br />
+            
+            <input type="checkbox" id="hideShortTitlesCheckBox" /><label for="hideShortTitlesCheckBox">Skjul artikler med tre eller færre ord (ofte klikkagn)</label><br /><br />
 
-            <input type="checkbox" id="hideQuoteTitlesCheckBox" /><label for="hideQuoteTitlesCheckBox">Skjul artikler som kun er et sitat («», ofte klikkagn)</label><br /><br />
-                
             <div class="formControlsWrapper">
                 <input type="button" value="Lagre innstillinger" id="editModalSaveButton" onclick="saveSettings();" /> 
                 <input type="button" value="Tilbakestill innstillinger" id="editModalDeleteButton" onclick="clearSettings();" /> 
@@ -371,6 +384,7 @@
         document.querySelector("#bannedURLContentTextArea").innerText = bannedURLContent.join(";");
         document.querySelector("#hideQuoteTitlesCheckBox").checked = hideQuoteTitles;
         document.querySelector("#hidePublicationTimestampCheckBox").checked = hidePublicationTimestamp;
+        document.querySelector("#hideShortTitlesCheckBox").checked = hideShortTitles;
     </script>
 </body>
 
