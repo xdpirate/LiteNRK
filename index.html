@@ -34,7 +34,9 @@
         }
 
         function hideAll() {
-            document.querySelectorAll(".hideBtn").forEach(btn => btn.click());
+            if(confirm("Er du sikker på at du vil markere alle artikler som lest? Dette skjuler dem fra visningen.\n\nDu kan tilbakestille dette i innstillingene.")) {
+                document.querySelectorAll(".hideBtn").forEach(btn => btn.click());
+            }
         }
 
         function toggleFilterModal() {
@@ -216,7 +218,7 @@
                 let html = "";
                 if(includedArticles.length > 0) {
                     for(let i = 0; i < includedArticles.length; i++) {
-                        html += `<div class="article"><span class="hideBtn" data-guid="${includedArticles[i][3]}" title="Skjul denne artikkelen">✅</span> <a class="headline" href="${includedArticles[i][1]}" target="_blank">${includedArticles[i][0]}</a> <span class="articleDate">[${includedArticles[i][2]}]</span>${hideCategories == false && includedArticles[i][4].length > 0 ? `<br /><span class="categories">(${includedArticles[i][4].join(", ")})</span>` : ''}</div>\n`;
+                        html += `<div class="article"><span class="hideBtn" data-guid="${includedArticles[i][3]}" title="Marker denne artikkelen som lest og skjul den">✅</span> <a class="headline" href="${includedArticles[i][1]}" target="_blank">${includedArticles[i][0]}</a> <span class="articleDate">[${includedArticles[i][2]}]</span>${hideCategories == false && includedArticles[i][4].length > 0 ? `<br /><span class="categories">(${includedArticles[i][4].join(", ")})</span>` : ''}</div>\n`;
                     }
                 } else {
                     html = `Ingen artikler å vise.`
@@ -370,6 +372,7 @@
     <div class="controls">
         <span class="controlBtn" onclick="location.reload();" title="Oppdater">♻️</span>
         <span id="filterBtn" class="controlBtn" onclick="toggleFilterModal();" title="Innstillinger og filtre">⚙️</span>
+        <span id="hideAllBtn" class="controlBtn" onclick="hideAll();" title="Marker alle som lest">✅</span>
         <br />
         <input type="text" id="quickFilter" autocomplete="off" placeholder="Hurtigfilter..." oninput="quickFilter();" />
     </div>
@@ -381,15 +384,15 @@
 
             <b>Kategorifilter:</b><br />
             <small><i>Hvis noen av disse kategoriene er satt, skjul artikkelen</i></small>
-            <textarea id="bannedCategoriesTextArea" placeholder="Kategorier;Separeres med semikolon;Donald Trump;USA;Elon Musk"></textarea><br /><br />
+            <textarea autocomplete="off" id="bannedCategoriesTextArea" placeholder="Kategorier;Separeres med semikolon;Donald Trump;USA;Elon Musk"></textarea><br /><br />
             
             <b>Nøkkelordsfilter:</b><br />
             <small><i>Hvis noen av disse nøkkelordene finnes i tittelen, skjul artikkelen</i></small>
-            <textarea id="bannedKeywordsTextArea" placeholder="Donald Trump;TikTok;Trond Giske"></textarea><br /><br />
+            <textarea autocomplete="off" id="bannedKeywordsTextArea" placeholder="Donald Trump;TikTok;Trond Giske"></textarea><br /><br />
             
             <b>URL-filter:</b><br />
             <small><i>Hvis noen av disse filtrene finnes i URLen, skjul artikkelen</i></small>
-            <textarea id="bannedURLContentTextArea" placeholder="/sport/;/trondelag/;/xl/"></textarea><br /><br />
+            <textarea autocomplete="off" id="bannedURLContentTextArea" placeholder="/sport/;/trondelag/;/xl/"></textarea><br /><br />
 
             <input type="checkbox" id="hidePublicationTimestampCheckBox" /><label for="hidePublicationTimestampCheckBox">Skjul publiseringstidspunkt</label><br />
             
