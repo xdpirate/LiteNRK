@@ -141,6 +141,11 @@
                 let items = data.querySelectorAll("item");
                 for(let i = 0; i < items.length; i++) {
                     let title = items[i].querySelector("title").innerHTML.trim();
+                    
+                    if(!title) {
+                        continue;
+                    }
+
                     let url = items[i].querySelector("link").innerHTML.trim();
                     let date = items[i].getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "date")[0].innerHTML.trim();
                     date = new Date(date).toLocaleDateString() + " kl. " + new Date(date).toLocaleTimeString();
