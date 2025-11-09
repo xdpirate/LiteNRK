@@ -71,6 +71,7 @@
             showParsedURL = document.querySelector("#showParsedURLCheckBox").checked;
             showDescription = document.querySelector("#showDescriptionCheckBox").checked;
             borderArticles = document.querySelector("#borderArticlesCheckBox").checked;
+            fillHeight = document.querySelector("#fillHeightCheckBox").checked;
             phoneMode = document.querySelector("#phoneModeCheckBox").checked;
 
             localStorage.setItem("bannedCategories", JSON.stringify(bannedCategories));
@@ -83,6 +84,7 @@
             localStorage.setItem("showParsedURL", JSON.stringify(showParsedURL));
             localStorage.setItem("showDescription", JSON.stringify(showDescription));
             localStorage.setItem("borderArticles", JSON.stringify(borderArticles));
+            localStorage.setItem("fillHeight", JSON.stringify(fillHeight));
             localStorage.setItem("phoneMode", JSON.stringify(phoneMode));
 
             location.reload();
@@ -100,6 +102,7 @@
                 localStorage.removeItem("showParsedURL");
                 localStorage.removeItem("showDescription");
                 localStorage.removeItem("borderArticles");
+                localStorage.removeItem("fillHeight");
                 localStorage.removeItem("phoneMode");
     
                 location.reload();
@@ -148,6 +151,7 @@
         let showParsedURL = JSON.parse(localStorage.getItem("showParsedURL")) || false;
         let showDescription = JSON.parse(localStorage.getItem("showDescription")) || false;
         let borderArticles = JSON.parse(localStorage.getItem("borderArticles")) || false;
+        let fillHeight = JSON.parse(localStorage.getItem("fillHeight")) || false;
         let phoneMode = JSON.parse(localStorage.getItem("phoneMode")) || false;
 
         if(bannedCategories.length == 1 && bannedCategories[0] == "") {
@@ -298,49 +302,51 @@
                         html += 
                             `<tr class="article ${borderArticles ? "bordered" : ''}" data-guid="${aGUID}">
                                 ${!phoneMode ?
-                                    `<td class="hideCell">
-                                        <span class="hideBtn" title="Marker denne artikkelen som lest og skjul den">✅</span>
+                                    `<td class="hideCell ${fillHeight ? "filled" : ''}">
+                                        <span class="hideBtn" title="Marker denne artikkelen som lest og skjul den">${fillHeight ? "✓" : "✅"}</span>
                                     </td>`
                                 : ''}
                                 <td>
-                                    <a class="headline" href="${aURL}" target="_blank">${aTitle}</a>
-                                    ${hidePublicationTimestamp ? 
-                                        ""
-                                    :
-                                        `<br /><span class="articleDate">[${aDate}]</span>
-                                    `}
-                                    ${showParsedURL ? 
-                                        `<br /><span class="parsedURLTitle"><b>URL-tittel:</b> «${aParsedURLTitle}»</span>`
-                                    :
-                                        ''
-                                    }
-                                    ${!hideCategories && aCategories.length > 0 ?
-                                        `<br /><span class="categories" data-all="${aCategories.join(", ")}"><b>Kategorier:</b> 
-                                            ${aCategories.length > 3 ?
-                                                `${aCategories[0]}, ${aCategories[1]}, ${aCategories[2]}... <span class="showAllCats">[vis alle]</span>`
-                                            :
-                                                aCategories.join(", ")
-                                            }</span>`
-                                    :
-                                        ''
-                                    }
-                                    ${showDescription && aDescription !== "" ?
-                                        `<br /><span class="description"><b>Beskrivelse:</b> «${aShortDescription == "" ? 
-                                                aDescription
-                                            :
-                                                aShortDescription.trim() + "..."
-                                        }»</span>${aShortDescription !== "" ?
-                                            `<span class="showFullDescription">[vis hele]</span>`
-                                        :
+                                    <div class="${!phoneMode ? "articleCellLeftMargin" : ''}">
+                                        <a class="headline" href="${aURL}" target="_blank">${aTitle}</a>
+                                        ${hidePublicationTimestamp ? 
                                             ""
-                                        }<span class="fullDescription hidden"><b>Beskrivelse:</b> «${aDescription}»</span>`
-                                    :
-                                        ''
-                                    }
+                                        :
+                                            `<br /><span class="articleDate">[${aDate}]</span>
+                                        `}
+                                        ${showParsedURL ? 
+                                            `<br /><span class="parsedURLTitle"><b>URL-tittel:</b> «${aParsedURLTitle}»</span>`
+                                        :
+                                            ''
+                                        }
+                                        ${!hideCategories && aCategories.length > 0 ?
+                                            `<br /><span class="categories" data-all="${aCategories.join(", ")}"><b>Kategorier:</b> 
+                                                ${aCategories.length > 3 ?
+                                                    `${aCategories[0]}, ${aCategories[1]}, ${aCategories[2]}... <span class="showAllCats">[vis alle]</span>`
+                                                :
+                                                    aCategories.join(", ")
+                                                }</span>`
+                                        :
+                                            ''
+                                        }
+                                        ${showDescription && aDescription !== "" ?
+                                            `<br /><span class="description"><b>Beskrivelse:</b> «${aShortDescription == "" ? 
+                                                    aDescription
+                                                :
+                                                    aShortDescription.trim() + "..."
+                                            }»</span>${aShortDescription !== "" ?
+                                                `<span class="showFullDescription">[vis hele]</span>`
+                                            :
+                                                ""
+                                            }<span class="fullDescription hidden"><b>Beskrivelse:</b> «${aDescription}»</span>`
+                                        :
+                                            ''
+                                        }
+                                    </div>
                                 </td>
                                 ${phoneMode ?
-                                    `<td class="hideCell">
-                                        <span class="hideBtn right" title="Marker denne artikkelen som lest og skjul den">✅</span>
+                                    `<td class="hideCell ${fillHeight ? "filled" : ''}">
+                                        <span class="hideBtn" title="Marker denne artikkelen som lest og skjul den">${fillHeight ? "✓" : "✅"}</span>
                                     </td>`
                                 : ''}
                             </tr>\n`;
@@ -352,8 +358,13 @@
                 
                 document.querySelector("#mainContent").innerHTML = html;
 
-                document.querySelectorAll("span.hideBtn").forEach(hideBtn => {
-                    hideBtn.addEventListener("click", function() {
+                let hideElems = document.querySelectorAll("span.hideBtn");
+                if(fillHeight) {
+                    hideElems = document.querySelectorAll("td.hideCell");
+                }
+
+                hideElems.forEach(hideElem => {
+                    hideElem.addEventListener("click", function() {
                         hiddenArticles.push(this.closest("tr.article").getAttribute("data-guid"));
                         localStorage.setItem("hiddenArticles", JSON.stringify(hiddenArticles));
                         fadeOut(this.closest("tr.article"))
@@ -362,8 +373,9 @@
 
                 document.querySelectorAll("span.showFullDescription").forEach(showFullBtn => {
                     showFullBtn.addEventListener("click", function() {
-                        this.closest("tr.article").querySelector("td > span.description").classList.add("hidden");
-                        this.closest("tr.article").querySelector("td > span.fullDescription").classList.remove("hidden");
+                        console.log(this);
+                        this.closest("tr.article").querySelector("span.description").classList.add("hidden");
+                        this.closest("tr.article").querySelector("span.fullDescription").classList.remove("hidden");
                         this.classList.add("hidden");
                     });
                 });
@@ -389,6 +401,11 @@
 
         h2 {
             margin: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        div#loadingDiv {
             width: 100%;
             text-align: center;
         }
@@ -422,7 +439,6 @@
         }
 
         #mainContent {
-            width: fit-content;
             max-width: 60%;
             min-width: 60%;
             margin: auto;
@@ -442,7 +458,6 @@
 
         span.hideBtn {
             font-size: 1.5em;
-            margin-right: 0.5em;
             user-select: none;
             cursor: pointer;
         }
@@ -455,6 +470,10 @@
         .controlBtn, span.showFullDescription, span.showAllCats {
             user-select: none;
             cursor: pointer;
+        }
+
+        table {
+            width: 100%;
         }
 
         tr.article {
@@ -471,6 +490,17 @@
             border-radius: 1em;
         }
 
+        td.hideCell.filled, td.hideCell:last-child {
+            text-align: right;
+            width: 1%;
+            white-space: nowrap;
+            padding: 0.3em;
+        }
+
+        div.articleCellLeftMargin {
+            margin-left: 0.5em;
+        }
+
         div#footer {
             font-size: 0.6em;
             margin-top: 0.5em;
@@ -478,6 +508,18 @@
 
         div#footer > a {
             font-weight: bold;
+        }
+
+        td.hideCell.filled {
+            vertical-align: middle;
+            background-color: #080;
+            border-radius: 0.5em;
+            user-select: none;
+            cursor: pointer;
+        }
+        
+        td.hideCell.filled > span.hideBtn {
+            margin: 0 !important;
         }
 
         #modal {
@@ -609,6 +651,8 @@
             
             <input type="checkbox" id="borderArticlesCheckBox" /><label for="borderArticlesCheckBox">Tegn en bord rundt hver artikkel (gir bedre fordeling ved mye informasjon)</label><br />
 
+            <input type="checkbox" id="fillHeightCheckBox" /><label for="fillHeightCheckBox">La hele artikkelhøyden fungere som en skjul-knapp</label><br />
+
             <input type="checkbox" id="phoneModeCheckBox" /><label for="phoneModeCheckBox">Vis skjul-knappen på høyre side (telefonmodus for høyrehendte)</label><br /><br />
 
             <div class="formControlsWrapper">
@@ -621,7 +665,9 @@
     </div>
 
     <div id="wrapper">
-        <div id="mainContent">⏲ Henter artikler...</div>
+        <div id="mainContent">
+            <div id="loadingDiv">⏲ Henter artikler...</div>
+        </div>
     </div>
 
     <div class="controls">
@@ -644,6 +690,7 @@
         document.querySelector("#showParsedURLCheckBox").checked = showParsedURL;
         document.querySelector("#showDescriptionCheckBox").checked = showDescription;
         document.querySelector("#borderArticlesCheckBox").checked = borderArticles;
+        document.querySelector("#fillHeightCheckBox").checked = fillHeight;
         document.querySelector("#phoneModeCheckBox").checked = phoneMode;
     </script>
 </body>
