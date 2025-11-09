@@ -70,6 +70,7 @@
             hideShortTitles = document.querySelector("#hideShortTitlesCheckBox").checked;
             showParsedURL = document.querySelector("#showParsedURLCheckBox").checked;
             showDescription = document.querySelector("#showDescriptionCheckBox").checked;
+            phoneMode = document.querySelector("#phoneModeCheckBox").checked;
 
             localStorage.setItem("bannedCategories", JSON.stringify(bannedCategories));
             localStorage.setItem("bannedKeywords", JSON.stringify(bannedKeywords));
@@ -80,6 +81,7 @@
             localStorage.setItem("hideShortTitles", JSON.stringify(hideShortTitles));
             localStorage.setItem("showParsedURL", JSON.stringify(showParsedURL));
             localStorage.setItem("showDescription", JSON.stringify(showDescription));
+            localStorage.setItem("phoneMode", JSON.stringify(phoneMode));
 
             location.reload();
         }
@@ -95,6 +97,7 @@
                 localStorage.removeItem("hideShortTitles");
                 localStorage.removeItem("showParsedURL");
                 localStorage.removeItem("showDescription");
+                localStorage.removeItem("phoneMode");
     
                 location.reload();
             }
@@ -141,6 +144,7 @@
         let hideShortTitles = JSON.parse(localStorage.getItem("hideShortTitles")) || false;
         let showParsedURL = JSON.parse(localStorage.getItem("showParsedURL")) || false;
         let showDescription = JSON.parse(localStorage.getItem("showDescription")) || false;
+        let phoneMode = JSON.parse(localStorage.getItem("phoneMode")) || false;
 
         if(bannedCategories.length == 1 && bannedCategories[0] == "") {
             bannedCategories = [];
@@ -289,9 +293,11 @@
 
                         html += 
                             `<tr class="article" data-guid="${aGUID}">
-                                <td class="hideCell">
-                                    <span class="hideBtn" title="Marker denne artikkelen som lest og skjul den">✅</span>
-                                </td>
+                                ${!phoneMode ?
+                                    `<td class="hideCell">
+                                        <span class="hideBtn" title="Marker denne artikkelen som lest og skjul den">✅</span>
+                                    </td>`
+                                : ''}
                                 <td>
                                     <a class="headline" href="${aURL}" target="_blank">${aTitle}</a>
                                     ${hidePublicationTimestamp ? 
@@ -328,6 +334,11 @@
                                         ''
                                     }
                                 </td>
+                                ${phoneMode ?
+                                    `<td class="hideCell">
+                                        <span class="hideBtn right" title="Marker denne artikkelen som lest og skjul den">✅</span>
+                                    </td>`
+                                : ''}
                             </tr>\n`;
                     }
                     html += "</table>";
@@ -425,16 +436,16 @@
             font-size: 0.8em;
         }
 
-        span.fullDescription, span.categories {
-            display: inline-block;
-            max-width: 70%;
-        }
-
         span.hideBtn {
             font-size: 1.5em;
             margin-right: 0.5em;
             user-select: none;
             cursor: pointer;
+        }
+
+        span.hideBtn.right {
+            margin-right: 0;
+            margin-left: 0.5em;
         }
 
         .controlBtn, span.showFullDescription, span.showAllCats {
@@ -521,10 +532,6 @@
                 font-size: 1em;
             }
 
-            span.fullDescription, span.categories {
-                max-width: initial;
-            }
-
             #modal {
                 font-size: initial;
                 position: fixed;
@@ -578,7 +585,9 @@
 
             <input type="checkbox" id="showParsedURLCheckBox" /><label for="showParsedURLCheckBox">Vis titteltekst fra lenke (ofte mer kontekst enn tittel)</label><br />
             
-            <input type="checkbox" id="showDescriptionCheckBox" /><label for="showDescriptionCheckBox">Vis artikkelbeskrivelse (kan være meget lang)</label><br /><br />
+            <input type="checkbox" id="showDescriptionCheckBox" /><label for="showDescriptionCheckBox">Vis artikkelbeskrivelse (kan være meget lang)</label><br />
+            
+            <input type="checkbox" id="phoneModeCheckBox" /><label for="phoneModeCheckBox">Vis skjul-knappen på høyre side (telefonmodus for høyrehendte)</label><br /><br />
 
             <div class="formControlsWrapper">
                 <input type="button" value="Lagre innstillinger" id="editModalSaveButton" onclick="saveSettings();" /> 
@@ -612,6 +621,7 @@
         document.querySelector("#hideShortTitlesCheckBox").checked = hideShortTitles;
         document.querySelector("#showParsedURLCheckBox").checked = showParsedURL;
         document.querySelector("#showDescriptionCheckBox").checked = showDescription;
+        document.querySelector("#phoneModeCheckBox").checked = phoneMode;
     </script>
 </body>
 
