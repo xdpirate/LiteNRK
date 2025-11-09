@@ -180,7 +180,7 @@
                     }
 
                     let url = items[i].querySelector("link").innerHTML.trim();
-                    let description = items[i].querySelector("description").innerHTML.trim() || "";
+                    let description = items[i].querySelector("description").innerHTML;
                     let date = items[i].getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "date")[0].innerHTML.trim();
                     date = new Date(date).toLocaleDateString() + " kl. " + new Date(date).toLocaleTimeString();
                     let guid = items[i].querySelector("guid").innerHTML.trim();
@@ -265,8 +265,11 @@
                         let aDate = currentArticle[2];
                         let aGUID = currentArticle[3];
                         let aCategories = currentArticle[4];
-                        let aDescription = currentArticle[5];                        
+                        let aDescription = currentArticle[5];
                         let aShortDescription = "";
+
+                        // Remove zero-width characters
+                        aDescription = aDescription.replace(/[\u00AD\u200B-\u200D\uFEFF]/g, "").trim();
 
                         if(aDescription.split(" ").length > 10) {
                             let words = aDescription.split(" ");
@@ -274,7 +277,11 @@
                                 aShortDescription += `${words[j]} `;
                             }
                         }
-                        
+
+                        if(!aDescription || aDescription === "") {
+                            aDescription = "Ingen beskrivelse tilgjengelig.";
+                        }
+
                         if(showParsedURL) {
                             aParsedURLTitle = aParsedURLTitle.substring(aURL.lastIndexOf("/") + 1).replaceAll(/_-_-_-/g, "=");
                             aParsedURLTitle = aParsedURLTitle.replaceAll(/-[0-9]\.[0-9]{8}/g, "");
@@ -287,10 +294,10 @@
     
                             aParsedURLTitle = aParsedURLTitle.charAt(0).toUpperCase() + aParsedURLTitle.slice(1);
 
-                            // common substitutions
+                            // Common substitutions
                             let words = aParsedURLTitle.split(" ");
                             
-                            for (let j = 0; j < words.length; j++) {
+                            for(let j = 0; j < words.length; j++) {
                                 if(urlParseSubstitutions[words[j]]) {
                                     words[j] = urlParseSubstitutions[words[j]];
                                 }
