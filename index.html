@@ -2,8 +2,21 @@
 <head>
     <title>LiteNRK</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABg2lDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV8/pCIVB4uIdIhQneyiIo61CkWoEGqFVh1MLv2CJg1Jiouj4Fpw8GOx6uDirKuDqyAIfoC4C06KLlLi/5JCixgPjvvx7t7j7h3gb1aZagYTgKpZRiaVFHL5VSH0iiCiAIYwKjFTnxPFNDzH1z18fL2L8yzvc3+OfqVgMsAnECeYbljEG8Qzm5bOeZ84wsqSQnxOPGHQBYkfuS67/Ma55LCfZ0aMbGaeOEIslLpY7mJWNlTiaeKYomqU78+5rHDe4qxW66x9T/7CcEFbWeY6zShSWMQSRAiQUUcFVViI06qRYiJD+0kP/4jjF8klk6sCRo4F1KBCcvzgf/C7W7M4NekmhZNAz4ttf4wBoV2g1bDt72Pbbp0AgWfgSuv4a01g9pP0RkeLHQED28DFdUeT94DLHWD4SZcMyZECNP3FIvB+Rt+UBwZvgb41t7f2Pk4fgCx1lb4BDg6B8RJlr3u8u7e7t3/PtPv7AXmhcqkzmPJyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6QQcABg7IcDfcAAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAABKSURBVCjPY2QwX89ACmBiIBGMaqCLhucbneEIwoWL47RB0n+vpP9eNFPgIiyYGiCGwVUgq8ZpA7IbJP33wtk4PY3mJGQ9jDRPrQA9IyJ+k/r1jQAAAABJRU5ErkJggg==">
     <script>
+        let urlParseSubstitutions = {
+            "ae": "æ",
+            "aa": "å",
+            "a": "å",
+            "fa": "få",
+            "na": "nå",
+            "pa": "på",
+            "slatt": "slått",
+            "ar": "år",
+            "dod": "død"
+        };
+
         function fadeOut(element) {
             let opacity = 1;
             let timer = setInterval(() => {
@@ -19,7 +32,7 @@
         }
 
         function checkHidden() {
-                let articles = document.querySelectorAll("div.article");
+                let articles = document.querySelectorAll("tr.article");
                 let numHidden = 0;
     
                 for(let i = 0; i < articles.length; i++) {
@@ -55,6 +68,8 @@
             hideCategories = document.querySelector("#hideCategoriesCheckBox").checked;
             hideQuoteTitles = document.querySelector("#hideQuoteTitlesCheckBox").checked;
             hideShortTitles = document.querySelector("#hideShortTitlesCheckBox").checked;
+            showParsedURL = document.querySelector("#showParsedURLCheckBox").checked;
+            showDescription = document.querySelector("#showDescriptionCheckBox").checked;
 
             localStorage.setItem("bannedCategories", JSON.stringify(bannedCategories));
             localStorage.setItem("bannedKeywords", JSON.stringify(bannedKeywords));
@@ -63,6 +78,8 @@
             localStorage.setItem("hideCategories", JSON.stringify(hideCategories));
             localStorage.setItem("hideQuoteTitles", JSON.stringify(hideQuoteTitles));
             localStorage.setItem("hideShortTitles", JSON.stringify(hideShortTitles));
+            localStorage.setItem("showParsedURL", JSON.stringify(showParsedURL));
+            localStorage.setItem("showDescription", JSON.stringify(showDescription));
 
             location.reload();
         }
@@ -76,6 +93,8 @@
                 localStorage.removeItem("hideCategories");
                 localStorage.removeItem("hideQuoteTitles");
                 localStorage.removeItem("hideShortTitles");
+                localStorage.removeItem("showParsedURL");
+                localStorage.removeItem("showDescription");
     
                 location.reload();
             }
@@ -120,6 +139,8 @@
         let hideCategories = JSON.parse(localStorage.getItem("hideCategories")) || false;
         let hideQuoteTitles = JSON.parse(localStorage.getItem("hideQuoteTitles")) || false;
         let hideShortTitles = JSON.parse(localStorage.getItem("hideShortTitles")) || false;
+        let showParsedURL = JSON.parse(localStorage.getItem("showParsedURL")) || false;
+        let showDescription = JSON.parse(localStorage.getItem("showDescription")) || false;
 
         if(bannedCategories.length == 1 && bannedCategories[0] == "") {
             bannedCategories = [];
@@ -147,6 +168,7 @@
                     }
 
                     let url = items[i].querySelector("link").innerHTML.trim();
+                    let description = items[i].querySelector("description").innerHTML.trim() || "";
                     let date = items[i].getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "date")[0].innerHTML.trim();
                     date = new Date(date).toLocaleDateString() + " kl. " + new Date(date).toLocaleTimeString();
                     let guid = items[i].querySelector("guid").innerHTML.trim();
@@ -215,16 +237,100 @@
                     if(!skip) {
                         let cats = [];
                         categories.forEach(categoryElement => cats.push(categoryElement.innerHTML))
-                        includedArticles.push([title, url, date, guid, cats])
+                        includedArticles.push([title, url, date, guid, cats, description])
                     }
                 }
 
                 // Build HTML
-                let html = "";
+                let html = "<table>";
                 if(includedArticles.length > 0) {
                     for(let i = 0; i < includedArticles.length; i++) {
-                        html += `<div class="article"><span class="hideBtn" data-guid="${includedArticles[i][3]}" title="Marker denne artikkelen som lest og skjul den">✅</span> <a class="headline" href="${includedArticles[i][1]}" target="_blank">${includedArticles[i][0]}</a> <span class="articleDate">[${includedArticles[i][2]}]</span>${hideCategories == false && includedArticles[i][4].length > 0 ? `<br /><span class="categories">(${includedArticles[i][4].join(", ")})</span>` : ''}</div>\n`;
+                        let currentArticle = includedArticles[i];
+                        
+                        let aTitle = currentArticle[0];
+                        let aURL = currentArticle[1];
+                        let aParsedURLTitle = aURL;
+                        let aDate = currentArticle[2];
+                        let aGUID = currentArticle[3];
+                        let aCategories = currentArticle[4];
+                        let aDescription = currentArticle[5];                        
+                        let aShortDescription = "";
+
+                        if(aDescription.split(" ").length > 10) {
+                            let words = aDescription.split(" ");
+                            for(let j = 0; j < 10; j++) {
+                                aShortDescription += `${words[j]} `;
+                            }
+                        }
+                        
+                        if(showParsedURL) {
+                            aParsedURLTitle = aParsedURLTitle.substring(aURL.lastIndexOf("/") + 1).replaceAll(/_-_-_-/g, "=");
+                            aParsedURLTitle = aParsedURLTitle.replaceAll(/-[0-9]\.[0-9]{8}/g, "");
+                            aParsedURLTitle = aParsedURLTitle.replaceAll(/_-_-/g, "=");
+                            aParsedURLTitle = aParsedURLTitle.replaceAll(/_-/g, "=");
+                            aParsedURLTitle = aParsedURLTitle.replaceAll(/-/g, " ");
+                            aParsedURLTitle = aParsedURLTitle.replaceAll(/=/g, " - ");
+                            aParsedURLTitle = aParsedURLTitle.replaceAll(/_/g, "");
+                            aParsedURLTitle = aParsedURLTitle.replaceAll(/  /g, " ");
+    
+                            aParsedURLTitle = aParsedURLTitle.charAt(0).toUpperCase() + aParsedURLTitle.slice(1);
+
+                            // common substitutions
+                            let words = aParsedURLTitle.split(" ");
+                            
+                            for (let j = 0; j < words.length; j++) {
+                                if(urlParseSubstitutions[words[j]]) {
+                                    words[j] = urlParseSubstitutions[words[j]];
+                                }
+                            }
+
+                            aParsedURLTitle = words.join(" ");
+                        }
+
+                        html += 
+                            `<tr class="article" data-guid="${aGUID}">
+                                <td class="hideCell">
+                                    <span class="hideBtn" title="Marker denne artikkelen som lest og skjul den">✅</span>
+                                </td>
+                                <td>
+                                    <a class="headline" href="${aURL}" target="_blank">${aTitle}</a>
+                                    ${hidePublicationTimestamp ? 
+                                        ""
+                                    :
+                                        `<br /><span class="articleDate">[${aDate}]</span>
+                                    `}
+                                    ${showParsedURL ? 
+                                        `<br /><span class="parsedURLTitle"><b>URL-tittel:</b> «${aParsedURLTitle}»</span>`
+                                    :
+                                        ''
+                                    }
+                                    ${!hideCategories && aCategories.length > 0 ?
+                                        `<br /><span class="categories" data-all="${aCategories.join(", ")}"><b>Kategorier:</b> 
+                                            ${aCategories.length > 3 ?
+                                                `${aCategories[0]}, ${aCategories[1]}, ${aCategories[2]}... <span class="showAllCats">[vis alle]</span>`
+                                            :
+                                                aCategories.join(", ")
+                                            }</span>`
+                                    :
+                                        ''
+                                    }
+                                    ${showDescription && aDescription !== "" ?
+                                        `<br /><span class="description"><b>Beskrivelse:</b> «${aShortDescription == "" ? 
+                                                aDescription
+                                            :
+                                                aShortDescription.trim() + "..."
+                                        }»</span>${aShortDescription !== "" ?
+                                            `<span class="showFullDescription">[vis hele]</span>`
+                                        :
+                                            ""
+                                        }<span class="fullDescription hidden"><b>Beskrivelse:</b> «${aDescription}»</span>`
+                                    :
+                                        ''
+                                    }
+                                </td>
+                            </tr>\n`;
                     }
+                    html += "</table>";
                 } else {
                     html = `Ingen artikler å vise.`
                 }
@@ -233,16 +339,25 @@
 
                 document.querySelectorAll("span.hideBtn").forEach(hideBtn => {
                     hideBtn.addEventListener("click", function() {
-                        hiddenArticles.push(this.getAttribute("data-guid"));
+                        hiddenArticles.push(this.closest("tr.article").getAttribute("data-guid"));
                         localStorage.setItem("hiddenArticles", JSON.stringify(hiddenArticles));
-                        fadeOut(this.closest("div"))
+                        fadeOut(this.closest("tr.article"))
                     });
                 });
 
-                if(hidePublicationTimestamp) {
-                    document.querySelectorAll("span.articleDate").forEach(timestamp => timestamp.classList.add("hidden")
-                    );
-                }
+                document.querySelectorAll("span.showFullDescription").forEach(showFullBtn => {
+                    showFullBtn.addEventListener("click", function() {
+                        this.closest("tr.article").querySelector("td > span.description").classList.add("hidden");
+                        this.closest("tr.article").querySelector("td > span.fullDescription").classList.remove("hidden");
+                        this.classList.add("hidden");
+                    });
+                });
+
+                document.querySelectorAll("span.showAllCats").forEach(showFullBtn => {
+                    showFullBtn.addEventListener("click", function() {
+                        this.closest("span.categories").innerHTML = `<b>Kategorier:</b> ${this.closest("span.categories").getAttribute("data-all")}`;
+                    });
+                });
             })
     </script>
     <style>
@@ -263,9 +378,17 @@
             text-align: center;
         }
 
+        a.headline {
+            font-size: 1.5em;
+        }
+
         textarea {
             width: 100%;
-            height: 5em;
+            height: 3em;
+        }
+
+        td.hideCell {
+            vertical-align: top;
         }
 
         a {
@@ -285,31 +408,41 @@
 
         #mainContent {
             width: fit-content;
+            max-width: 60%;
+            min-width: 60%;
             margin: auto;
         }
 
-        span.articleDate {
-            font-size: 0.5em;
+        span.articleDate, span.showFullDescription, span.showAllCats {
             color: #ccc;
         }
 
-        span.categories {
-            font-size: 0.5em;
-            margin-left: 2em;   
+        span.showFullDescription, span.showAllCats {
+            margin-left: 0.2em;
         }
-        
+
+        span.categories, span.parsedURLTitle, span.description, span.fullDescription, span.showFullDescription, span.articleDate {
+            font-size: 0.8em;
+        }
+
+        span.fullDescription, span.categories {
+            display: inline-block;
+            max-width: 70%;
+        }
+
         span.hideBtn {
-            font-size: 0.5em;
+            font-size: 1.5em;
+            margin-right: 0.5em;
             user-select: none;
             cursor: pointer;
         }
 
-        .controlBtn {
+        .controlBtn, span.showFullDescription, span.showAllCats {
             user-select: none;
             cursor: pointer;
         }
 
-        div.article {
+        tr.article {
             margin-bottom: 0.4em;
         }
 
@@ -323,6 +456,7 @@
         }
 
         #modal {
+            font-size: 0.7em;
             position: fixed;
             top: 50%;
             left: 50%;
@@ -357,16 +491,51 @@
         /* Phone styles */
         @media all and (max-width: 1000px) {
             html,body {
-                font-size: 1.4em;
+                font-size: 1.5em;
             }
 
-            span.hideBtn, .controlBtn {
-                font-size: 1.4em;
+            #mainContent {
+            width: fit-content;
+                max-width: 95%;
+                min-width: 95%;
+                margin: auto;
+            }
+
+            span.hideBtn {
+                font-size: 2em;
+            }
+            
+            .controlBtn {
+                font-size: 1.5em;
             }
 
             div.controls {
                 font-size: 2em;
             }
+
+            a.headline {
+                font-size: 2em;
+            }
+            
+            span.categories, span.parsedURLTitle, span.description, span.fullDescription, span.showFullDescription, span.articleDate {
+                font-size: 2em;
+            }
+
+            span.fullDescription, span.categories {
+                max-width: initial;
+            }
+
+            #modal {
+                font-size: initial;
+                position: fixed;
+                top: 0.5em;
+                left: 0.5em;
+                transform: initial;
+                width: 95%;
+                height: 95%;
+                padding: 1em;
+            }
+
         }
     </style>
 </head>
@@ -405,7 +574,11 @@
             
             <input type="checkbox" id="hideQuoteTitlesCheckBox" /><label for="hideQuoteTitlesCheckBox">Skjul artikler som kun er et sitat («», ofte klikkagn)</label><br />
             
-            <input type="checkbox" id="hideShortTitlesCheckBox" /><label for="hideShortTitlesCheckBox">Skjul artikler med tre eller færre ord (ofte klikkagn)</label><br /><br />
+            <input type="checkbox" id="hideShortTitlesCheckBox" /><label for="hideShortTitlesCheckBox">Skjul artikler med tre eller færre ord (ofte klikkagn)</label><br />
+
+            <input type="checkbox" id="showParsedURLCheckBox" /><label for="showParsedURLCheckBox">Vis titteltekst fra lenke (ofte mer kontekst enn tittel)</label><br />
+            
+            <input type="checkbox" id="showDescriptionCheckBox" /><label for="showDescriptionCheckBox">Vis artikkelbeskrivelse (kan være meget lang)</label><br /><br />
 
             <div class="formControlsWrapper">
                 <input type="button" value="Lagre innstillinger" id="editModalSaveButton" onclick="saveSettings();" /> 
@@ -437,6 +610,8 @@
         document.querySelector("#hidePublicationTimestampCheckBox").checked = hidePublicationTimestamp;
         document.querySelector("#hideCategoriesCheckBox").checked = hideCategories;
         document.querySelector("#hideShortTitlesCheckBox").checked = hideShortTitles;
+        document.querySelector("#showParsedURLCheckBox").checked = showParsedURL;
+        document.querySelector("#showDescriptionCheckBox").checked = showDescription;
     </script>
 </body>
 
