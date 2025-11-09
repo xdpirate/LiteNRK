@@ -103,9 +103,9 @@
         function quickFilter() {
             let filterInput = document.querySelector("#quickFilter").value.trim().toLowerCase();
             if(filterInput == "") {
-                document.querySelectorAll("div.article").forEach(article => article.classList.remove("hidden"));
+                document.querySelectorAll("tr.article").forEach(article => article.classList.remove("hidden"));
             } else {
-                let articleDivs = document.querySelectorAll("div.article");
+                let articleDivs = document.querySelectorAll("tr.article");
                 articleDivs.forEach(articleDiv => {
                     let headline = articleDiv.querySelector("a.headline").innerText.toLowerCase();
                     let categories = "";
@@ -491,7 +491,7 @@
         /* Phone styles */
         @media all and (max-width: 1000px) {
             html,body {
-                font-size: 1.5em;
+                font-size: 1.2em;
             }
 
             #mainContent {
@@ -510,15 +510,15 @@
             }
 
             div.controls {
-                font-size: 2em;
+                font-size: 1em;
             }
 
             a.headline {
-                font-size: 2em;
+                font-size: 1.5em;
             }
             
             span.categories, span.parsedURLTitle, span.description, span.fullDescription, span.showFullDescription, span.articleDate {
-                font-size: 2em;
+                font-size: 1em;
             }
 
             span.fullDescription, span.categories {
