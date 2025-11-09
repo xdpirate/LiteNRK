@@ -70,6 +70,7 @@
             hideShortTitles = document.querySelector("#hideShortTitlesCheckBox").checked;
             showParsedURL = document.querySelector("#showParsedURLCheckBox").checked;
             showDescription = document.querySelector("#showDescriptionCheckBox").checked;
+            borderArticles = document.querySelector("#borderArticlesCheckBox").checked;
             phoneMode = document.querySelector("#phoneModeCheckBox").checked;
 
             localStorage.setItem("bannedCategories", JSON.stringify(bannedCategories));
@@ -81,6 +82,7 @@
             localStorage.setItem("hideShortTitles", JSON.stringify(hideShortTitles));
             localStorage.setItem("showParsedURL", JSON.stringify(showParsedURL));
             localStorage.setItem("showDescription", JSON.stringify(showDescription));
+            localStorage.setItem("borderArticles", JSON.stringify(borderArticles));
             localStorage.setItem("phoneMode", JSON.stringify(phoneMode));
 
             location.reload();
@@ -97,6 +99,7 @@
                 localStorage.removeItem("hideShortTitles");
                 localStorage.removeItem("showParsedURL");
                 localStorage.removeItem("showDescription");
+                localStorage.removeItem("borderArticles");
                 localStorage.removeItem("phoneMode");
     
                 location.reload();
@@ -144,6 +147,7 @@
         let hideShortTitles = JSON.parse(localStorage.getItem("hideShortTitles")) || false;
         let showParsedURL = JSON.parse(localStorage.getItem("showParsedURL")) || false;
         let showDescription = JSON.parse(localStorage.getItem("showDescription")) || false;
+        let borderArticles = JSON.parse(localStorage.getItem("borderArticles")) || false;
         let phoneMode = JSON.parse(localStorage.getItem("phoneMode")) || false;
 
         if(bannedCategories.length == 1 && bannedCategories[0] == "") {
@@ -292,7 +296,7 @@
                         }
 
                         html += 
-                            `<tr class="article" data-guid="${aGUID}">
+                            `<tr class="article ${borderArticles ? "bordered" : ''}" data-guid="${aGUID}">
                                 ${!phoneMode ?
                                     `<td class="hideCell">
                                         <span class="hideBtn" title="Marker denne artikkelen som lest og skjul den">✅</span>
@@ -455,6 +459,16 @@
 
         tr.article {
             margin-bottom: 0.4em;
+            box-sizing: border-box;
+        }
+
+        tr.bordered {
+            display: block;
+            margin-bottom: 1em;
+            width: 100%;
+            border: 1px dashed white;
+            padding: 0.5em;
+            border-radius: 1em;
         }
 
         div#footer {
@@ -502,14 +516,15 @@
         /* Phone styles */
         @media all and (max-width: 1000px) {
             html,body {
-                font-size: 1.2em;
+                font-size: 1.0em;
             }
 
             #mainContent {
-            width: fit-content;
+                width: fit-content;
                 max-width: 95%;
                 min-width: 95%;
                 margin: auto;
+                box-sizing: border-box;
             }
 
             span.hideBtn {
@@ -533,16 +548,21 @@
             }
 
             #modal {
-                font-size: initial;
+                font-size: 0.8em;
                 position: fixed;
-                top: 0.5em;
-                left: 0.5em;
+                top: 0;
+                left: 0;
                 transform: initial;
                 width: 95%;
                 height: 95%;
-                padding: 1em;
+                padding: 0.5em;
+                border-radius: 0;
+                box-shadow: 0 0 0 0;
             }
 
+            #modalbg {
+                background-color: #2e3440;
+            }
         }
     </style>
 </head>
@@ -561,7 +581,7 @@
     <div id="modalbg" style="display: none;" onclick="this.style.display = 'none';">
         <div id="modal" onclick="event.stopPropagation();">
             <h2>Innstillinger og filtre</h2>
-            Her kan du definere filtre for å filtrere vekk artikler du ikke ønsker å se. Hvert filter innenfor hver kategori skal separeres med et semikolon (<code>;</code>).<br /><br />
+            Her kan du definere filtre for å skjule artikler. Hvert filter skal separeres med et semikolon (<code>;</code>).<br /><br />
 
             <b>Kategorifilter:</b><br />
             <small><i>Hvis noen av disse kategoriene er satt, skjul artikkelen</i></small>
@@ -587,6 +607,8 @@
             
             <input type="checkbox" id="showDescriptionCheckBox" /><label for="showDescriptionCheckBox">Vis artikkelbeskrivelse (kan være meget lang)</label><br />
             
+            <input type="checkbox" id="borderArticlesCheckBox" /><label for="borderArticlesCheckBox">Tegn en bord rundt hver artikkel (gir bedre fordeling ved mye informasjon)</label><br />
+
             <input type="checkbox" id="phoneModeCheckBox" /><label for="phoneModeCheckBox">Vis skjul-knappen på høyre side (telefonmodus for høyrehendte)</label><br /><br />
 
             <div class="formControlsWrapper">
@@ -621,6 +643,7 @@
         document.querySelector("#hideShortTitlesCheckBox").checked = hideShortTitles;
         document.querySelector("#showParsedURLCheckBox").checked = showParsedURL;
         document.querySelector("#showDescriptionCheckBox").checked = showDescription;
+        document.querySelector("#borderArticlesCheckBox").checked = borderArticles;
         document.querySelector("#phoneModeCheckBox").checked = phoneMode;
     </script>
 </body>
