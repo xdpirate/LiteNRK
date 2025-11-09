@@ -360,7 +360,7 @@
                     }
                     html += "</table>";
                 } else {
-                    html = `Ingen artikler å vise.`
+                    html = `<div id="loadingDiv">Ingen artikler å vise.</div>`
                 }
                 
                 document.querySelector("#mainContent").innerHTML = html;
